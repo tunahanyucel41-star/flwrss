@@ -1,272 +1,412 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flowers 🌸</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abisinin Gülü 🤍🌹</title>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{
-  background:#080b10;
-  color:white;
-  font-family:Georgia,serif;
-  overflow:hidden;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-canvas{
-  position:fixed;
-  inset:0;
-  width:100%;
-  height:100%;
+
+body {
+  min-height: 100vh;
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at center,
+    #203c2c,
+    #101d17 50%,
+    #070b09
+  );
+  color: white;
+  font-family: Georgia, serif;
 }
-.overlay{
-  position:fixed;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:flex-end;
-  padding:35px 20px;
-  pointer-events:none;
-  text-align:center;
+
+.scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 7vh;
 }
-h1{
-  font-size:clamp(25px,7vw,38px);
-  font-weight:normal;
-  letter-spacing:5px;
-  color:#e8d7c4;
-  text-shadow:0 0 20px #e9b6ce55;
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(white 1px, transparent 1px),
+    radial-gradient(#d9f3df 1px, transparent 1px);
+  background-size: 100px 100px, 150px 150px;
+  opacity: .35;
+  animation: twinkle 4s infinite alternate;
 }
-p{
-  margin-top:12px;
-  color:#8d929c;
-  font-size:13px;
-  letter-spacing:2px;
+
+.glow {
+  position: absolute;
+  width: 550px;
+  height: 550px;
+  bottom: 15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(196,239,203,.18),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: 2s;
 }
-button{
-  pointer-events:auto;
-  margin-top:25px;
-  background:transparent;
-  color:#e8c8d6;
-  border:1px solid #8f647b;
-  padding:12px 25px;
-  border-radius:30px;
-  letter-spacing:2px;
-  cursor:pointer;
+
+.soil {
+  position: absolute;
+  bottom: 10%;
+  width: min(76vw,650px);
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(#5b4935,#211c16);
+  box-shadow: 0 12px 35px #000;
+}
+
+.plant {
+  position: absolute;
+  bottom: calc(10% + 10px);
+  width: min(75vw,520px);
+  height: min(65vh,570px);
+  transform-origin: bottom center;
+  filter: drop-shadow(0 12px 18px #0009);
+}
+
+svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.stem {
+  fill: none;
+  stroke: #6ca66c;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 520;
+  stroke-dashoffset: 520;
+}
+
+.leaf {
+  fill: #5b9b60;
+  opacity: 0;
+}
+
+.petal {
+  fill: url(#petalGrad);
+  stroke: #d9d7d1;
+  stroke-width: 1.1;
+  opacity: 0;
+}
+
+.center {
+  fill: #e7d9a7;
+  opacity: 0;
+}
+
+.copy {
+  position: relative;
+  z-index: 2;
+  width: min(92vw,760px);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(18px);
+  text-shadow: 0 2px 18px #000;
+}
+
+.copy p {
+  font-size: clamp(1.15rem,3.1vw,2rem);
+  line-height: 1.55;
+}
+
+.start {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  border: 1px solid #d8ead7aa;
+  border-radius: 999px;
+  padding: 15px 27px;
+  color: white;
+  background: #1d3528;
+  font: 16px Georgia,serif;
+  cursor: pointer;
+  box-shadow: 0 0 35px #c8e8ce22;
+}
+
+.hint {
+  position: absolute;
+  top: calc(50% + 42px);
+  color: #c5d6c8;
+  font: 12px Arial;
+}
+
+.music {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 210px;
+  height: 118px;
+  border-radius: 12px;
+  overflow: hidden;
+  opacity: 0;
+  transition: 1s;
+  z-index: 8;
+}
+
+.music iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+body.started .start,
+body.started .hint {
+  display: none;
+}
+
+body.started .glow {
+  opacity: 1;
+}
+
+body.bloom .stem {
+  animation: drawStem 3.8s .2s forwards;
+}
+
+body.bloom .petal {
+  animation: petalOpen 1.6s forwards;
+}
+
+body.bloom .center {
+  animation: appear 1s 1s forwards;
+}
+
+body.bloom .leaf {
+  animation: leafOpen 1.4s 1.2s forwards;
+}
+
+body.message .plant {
+  animation: shrink 1.8s forwards;
+}
+
+body.message .copy {
+  animation: showText 1.6s .5s forwards;
+}
+
+body.message .music {
+  opacity: 1;
+}
+
+@keyframes drawStem {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes petalOpen {
+  0% {
+    opacity: 0;
+    transform: scale(.08) rotate(-24deg);
+  }
+  70% { opacity: 1; }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@keyframes appear {
+  to { opacity: 1; }
+}
+
+@keyframes leafOpen {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shrink {
+  to { transform: scale(.66); }
+}
+
+@keyframes showText {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes twinkle {
+  to { opacity: .8; }
+}
+
+@media(max-width:600px) {
+  .plant {
+    height: 58vh;
+    width: 90vw;
+  }
+
+  .music {
+    width: 150px;
+    height: 85px;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<canvas id="flower"></canvas>
+<main class="scene">
 
-<div class="overlay">
-  <h1>Flowers</h1>
-  <p>EVERYTHING BEAUTIFUL TAKES TIME</p>
-  <button onclick="restart()">BLOOM AGAIN ✦</button>
+<div class="stars"></div>
+<div class="glow"></div>
+<div class="soil"></div>
+
+<div class="plant">
+
+<svg viewBox="0 0 520 570">
+
+<defs>
+  <linearGradient id="petalGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff"/>
+    <stop offset=".48" stop-color="#f4f2ed"/>
+    <stop offset="1" stop-color="#c9c9c3"/>
+  </linearGradient>
+</defs>
+
+<!-- Gülün gövdesi -->
+
+<path class="stem"
+d="M260 505 C258 420 265 340 260 255 C257 220 260 190 260 165"/>
+
+<!-- Yapraklar -->
+
+<path class="leaf"
+d="M258 390 C205 365 160 374 146 414 C190 431 231 420 258 390Z"/>
+
+<path class="leaf"
+d="M262 330 C312 291 365 300 382 339 C345 367 300 364 262 330Z"/>
+
+<!-- Beyaz gül yaprakları -->
+
+<g transform="translate(260 145)">
+
+<path class="petal" style="animation-delay:.15s"
+d="M0 8 C-68 -18 -80 -95 -34 -119 C7 -139 40 -80 0 8Z"/>
+
+<path class="petal" style="animation-delay:.28s"
+d="M0 8 C-104 13 -127 -52 -91 -87 C-54 -119 -4 -66 0 8Z"/>
+
+<path class="petal" style="animation-delay:.4s"
+d="M0 8 C-112 58 -143 8 -117 -35 C-91 -77 -30 -45 0 8Z"/>
+
+<path class="petal" style="animation-delay:.52s"
+d="M0 8 C-91 93 -143 62 -132 13 C-121 -36 -51 -26 0 8Z"/>
+
+<path class="petal" style="animation-delay:.64s"
+d="M0 8 C-43 112 -105 116 -125 75 C-145 33 -70 -8 0 8Z"/>
+
+<path class="petal" style="animation-delay:.76s"
+d="M0 8 C42 112 105 116 125 75 C145 33 70 -8 0 8Z"/>
+
+<path class="petal" style="animation-delay:.88s"
+d="M0 8 C91 93 143 62 132 13 C121 -36 51 -26 0 8Z"/>
+
+<path class="petal" style="animation-delay:1s"
+d="M0 8 C112 58 143 8 117 -35 C91 -77 30 -45 0 8Z"/>
+
+<path class="petal" style="animation-delay:1.12s"
+d="M0 8 C104 13 127 -52 91 -87 C54 -119 4 -66 0 8Z"/>
+
+<path class="petal" style="animation-delay:1.24s"
+d="M0 8 C68 -18 80 -95 34 -119 C-7 -139 -40 -80 0 8Z"/>
+
+<path class="petal" style="animation-delay:1.36s"
+d="M0 8 C-40 -36 -27 -82 3 -83 C35 -84 43 -38 0 8Z"/>
+
+<path class="petal" style="animation-delay:1.48s"
+d="M0 8 C-26 -34 5 -65 29 -48 C50 -31 34 -1 0 8Z"/>
+
+<path class="petal" style="animation-delay:1.6s"
+d="M0 8 C18 -35 53 -23 49 4 C45 27 18 30 0 8Z"/>
+
+<circle class="center" cx="7" cy="2" r="11"/>
+
+</g>
+</svg>
 </div>
 
+<!-- Mesaj -->
+
+<section class="copy">
+<p>
+sen benim birtanemsin canımsın kuzenimm.<br>
+iyiki varsın iyi teyzem doğurmuş seni :D<br>
+abisinin gülüüüü 🤍🌹
+</p>
+</section>
+
+<button class="start" id="startBtn">
+Gülü büyüt 🌱
+</button>
+
+<div class="hint">
+Başlamak için dokun
+</div>
+
+</main>
+
+<!-- YouTube müzik -->
+
+<div class="music" id="musicBox"></div>
+
 <script>
-const canvas=document.getElementById("flower");
-const ctx=canvas.getContext("2d");
 
-let W,H,cx,ground;
-let start=performance.now();
-let particles=[];
-let falling=[];
-let paused=false;
-let last=0;
+const startBtn = document.getElementById("startBtn");
+const musicBox = document.getElementById("musicBox");
 
-function resize(){
-  const dpr=Math.min(devicePixelRatio||1,2);
-  W=innerWidth; H=innerHeight;
-  canvas.width=W*dpr;
-  canvas.height=H*dpr;
-  canvas.style.width=W+"px";
-  canvas.style.height=H+"px";
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  cx=W/2;
-  ground=H*.76;
-  createParticles();
-}
-addEventListener("resize",resize);
+let started = false;
 
-function rand(a,b){return a+Math.random()*(b-a)}
+startBtn.addEventListener("click", () => {
 
-function createParticles(){
-  particles=[];
-  for(let i=0;i<6500;i++){
-    let angle=rand(0,Math.PI*2);
-    let radius=Math.sqrt(Math.random());
-    particles.push({
-      angle,radius,
-      size:rand(.5,1.8),
-      seed:rand(0,10),
-      hue:rand(0,1)
-    });
-  }
-}
+  if (started) return;
+  started = true;
 
-function restart(){
-  start=performance.now();
-  falling=[];
-}
+  document.body.classList.add("started");
 
-function ease(t){
-  t=Math.max(0,Math.min(1,t));
-  return t*t*(3-2*t);
-}
+  // YouTube müziğini başlat
+  musicBox.innerHTML = `
+  <iframe
+  src="https://www.youtube-nocookie.com/embed/IBK5zOqPNKM?autoplay=1&playsinline=1&rel=0"
+  title="YouTube müzik"
+  allow="autoplay; encrypted-media; picture-in-picture"
+  allowfullscreen>
+  </iframe>`;
 
-function dot(x,y,r,color,alpha=1){
-  ctx.globalAlpha=alpha;
-  ctx.fillStyle=color;
-  ctx.beginPath();
-  ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fill();
-}
+  // Gülün büyümesi
+  setTimeout(() => {
+    document.body.classList.add("bloom");
+  }, 80);
 
-function draw(now){
-  if(paused)return;
-  const t=((now-start)/1000)%22;
+  // 6.5 saniye sonra mesaj
+  setTimeout(() => {
+    document.body.classList.add("message");
+  }, 6500);
 
-  ctx.clearRect(0,0,W,H);
+});
 
-  // Ambient glow
-  let glow=ctx.createRadialGradient(cx,ground-180,5,cx,ground-180,Math.max(W,H)*.65);
-  glow.addColorStop(0,"#33202b55");
-  glow.addColorStop(1,"#080b1000");
-  ctx.fillStyle=glow;
-  ctx.fillRect(0,0,W,H);
-
-  // Soil
-  for(let i=0;i<260;i++){
-    let x=rand(0,W);
-    let y=ground+rand(0,45);
-    dot(x,y,rand(.5,1.5),"#9d8066",.22);
-  }
-
-  // Life phases
-  let growth=ease(t/6);
-  let bloom=ease((t-5)/4);
-  let decay=ease((t-14)/4);
-  let alive=bloom*(1-decay);
-
-  // Stem
-  let stemHeight=Math.min(H*.34,250)*growth;
-  ctx.beginPath();
-  ctx.moveTo(cx,ground);
-  ctx.quadraticCurveTo(cx-35,ground-stemHeight*.5,cx,ground-stemHeight);
-  ctx.strokeStyle="#789b75";
-  ctx.lineWidth=3;
-  ctx.globalAlpha=growth;
-  ctx.stroke();
-
-  // Stem particles
-  for(let i=0;i<180;i++){
-    let u=Math.random();
-    let x=cx-35*Math.sin(u*Math.PI/2)*u+rand(-3,3);
-    let y=ground-stemHeight*u;
-    dot(x,y,rand(.6,1.5),"#a3c78b",growth*.65);
-  }
-
-  // Leaves
-  for(let side of [-1,1]){
-    let x=cx+side*35;
-    let y=ground-stemHeight*.55;
-    ctx.save();
-    ctx.translate(x,y);
-    ctx.rotate(side*.5);
-    ctx.globalAlpha=growth;
-    ctx.beginPath();
-    ctx.ellipse(0,0,27,10,0,0,Math.PI*2);
-    ctx.fillStyle="#355f49";
-    ctx.fill();
-    for(let i=0;i<45;i++){
-      dot(rand(-23,23),rand(-7,7),rand(.5,1.3),"#a6c88a",.65);
-    }
-    ctx.restore();
-  }
-
-  // Flower position
-  let fx=cx;
-  let fy=ground-stemHeight;
-
-  // Petals
-  const count=11;
-  for(let i=0;i<count;i++){
-    let a=i*Math.PI*2/count;
-    let open=bloom*(1-decay*.8);
-    let r=42*open;
-    let px=fx+Math.cos(a)*r;
-    let py=fy+Math.sin(a)*r;
-
-    ctx.save();
-    ctx.translate(fx,fy);
-    ctx.rotate(a);
-    ctx.globalAlpha=alive;
-    ctx.beginPath();
-    ctx.ellipse(0,-r*.65,13*open,25*open,0,0,Math.PI*2);
-    let g=ctx.createLinearGradient(0,-r,0,0);
-    g.addColorStop(0,"#f7d9e8");
-    g.addColorStop(1,"#bc668d");
-    ctx.fillStyle=g;
-    ctx.fill();
-    ctx.restore();
-
-    // Pointillist petals
-    for(let j=0;j<100;j++){
-      let rr=Math.sqrt(Math.random())*r;
-      let ang=rand(0,Math.PI*2);
-      dot(
-        fx+Math.cos(ang)*rr,
-        fy+Math.sin(ang)*rr,
-        rand(.5,1.4),
-        Math.random()>.5?"#f7d6e6":"#d58baa",
-        alive*.65
-      );
-    }
-  }
-
-  // Flower center
-  for(let i=0;i<180;i++){
-    let a=rand(0,Math.PI*2);
-    let r=Math.sqrt(Math.random())*13*bloom;
-    dot(fx+Math.cos(a)*r,fy+Math.sin(a)*r,
-      rand(.7,1.7),"#f6d88c",alive);
-  }
-
-  // Floating and falling particles
-  if(t>13 && Math.random()<.4){
-    falling.push({
-      x:fx+rand(-35,35),
-      y:fy+rand(-20,20),
-      vx:rand(-.8,.8),
-      vy:rand(.3,1.3),
-      life:1
-    });
-  }
-
-  falling=falling.filter(p=>p.life>0);
-  for(let p of falling){
-    p.x+=p.vx;
-    p.y+=p.vy;
-    p.life-=.008;
-    dot(p.x,p.y,2,"#e6a8c4",p.life);
-  }
-
-  // Atmospheric stars
-  for(let i=0;i<55;i++){
-    let x=(i*137.5)%W;
-    let y=(i*83.7)%H*.8;
-    let a=.2+.3*Math.sin(now/1000+i);
-    dot(x,y,1,"#e5d4e9",a);
-  }
-
-  ctx.globalAlpha=1;
-  requestAnimationFrame(draw);
-}
-
-resize();
-requestAnimationFrame(draw);
 </script>
+
 </body>
 </html>
